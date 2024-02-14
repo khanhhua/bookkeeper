@@ -3,8 +3,11 @@
 #include <string.h>
 
 #include "bookkeeper.h"
+
+#define DATAFILE "books.dat"
 /* APPLICATION STORAGE */
-BookLinkedList books;
+Database database;
+BookLinkedList *books;
 
 void nreads(char *s, size_t limit) {
   do {
@@ -21,6 +24,7 @@ int menu() {
          "2. Checkout a book\n"
          "3. Return a lease\n"
          "90. Add new book\n"
+         "99. Save\n"
          "0. Quit\n");
 
   int choice;
@@ -40,7 +44,7 @@ void collectBook() {
   printf("Authors: ");
   nreads(book.authors, 50);
 
-  BLL_add(&books, book);
+  BLL_add(books, book);
 }
 
 void searchBook() {
@@ -50,10 +54,18 @@ void searchBook() {
   printf("Enter ISBN: ");
   nreads(isbn, 17);
 
-  book = BLL_find_by_isbn(&books, isbn);
+  book = BLL_find_by_isbn(books, isbn);
   if (book != NULL) {
     printf("Found: Title \"%s\" by %s\n", book->title, book->authors);
   }
+}
+
+void saveDatabase() {
+  if (database.books == NULL) {
+    database.books = books;
+  }
+
+  DB_save(&database, DATAFILE);
 }
 
 void app() {
@@ -66,6 +78,9 @@ void app() {
   case 90:
     collectBook();
     break;
+  case 99:
+    saveDatabase();
+    break;
   }
 
   if (choice) {
@@ -74,11 +89,17 @@ void app() {
 }
 
 int main() {
-  BLL_init(&books);
+  DB_init(&database, DATAFILE);
+  if (database.books != NULL) {
+    books = database.books;
+  } else {
+    books = (BookLinkedList *)calloc(sizeof(BookLinkedList), 1);
+    BLL_init(books);
+  }
 
   app();
 
-  BookNode *iter = books.head;
+  BookNode *iter = books->head;
   while (iter != NULL) {
     printf("Book %s by %s\n", iter->value.title, iter->value.authors);
     iter = iter->next;
