@@ -3,18 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void promoteHead(BookLinkedList *instance, BookNode *newHead) {
+static void promoteHead(CheckoutLinkedList *instance, CheckoutNode *newHead) {
   newHead->next = instance->head;
   instance->head = newHead;
 }
 
-void BLL_init(BookLinkedList *instance) {
+void CHKLL_init(CheckoutLinkedList *instance) {
   instance->head = NULL;
   instance->count = 0;
 }
 
-void BLL_add(BookLinkedList *instance, Book book) {
-  BookNode *newHead = (BookNode *)calloc(1, sizeof(BookNode));
+void CHKLL_add(CheckoutLinkedList *instance, Checkout book) {
+  CheckoutNode *newHead = (CheckoutNode *)calloc(1, sizeof(CheckoutNode));
   newHead->value = book;
 
   instance->count++;
@@ -26,7 +26,7 @@ void BLL_add(BookLinkedList *instance, Book book) {
   promoteHead(instance, newHead);
 }
 
-Book *BLL_find_by_isbn(BookLinkedList *instance, char isbn[18]) {
+Checkout *CHKLL_find_by_isbn(CheckoutLinkedList *instance, char isbn[18]) {
   if (instance == NULL) {
     return NULL;
   }
@@ -35,7 +35,7 @@ Book *BLL_find_by_isbn(BookLinkedList *instance, char isbn[18]) {
     return NULL;
   }
 
-  BookNode *iter = instance->head;
+  CheckoutNode *iter = instance->head;
   bool found;
   do {
     found = strcmp(iter->value.isbn, isbn);

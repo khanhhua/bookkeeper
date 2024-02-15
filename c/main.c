@@ -8,6 +8,7 @@
 /* APPLICATION STORAGE */
 Database database;
 BookLinkedList *books;
+CheckoutLinkedList *checkouts;
 
 void nreads(char *s, size_t limit) {
   do {
@@ -60,9 +61,39 @@ void searchBook() {
   }
 }
 
+void checkoutBook() {
+  Book *book = NULL;
+
+  char isbn[18];
+  printf("Enter ISBN: ");
+  nreads(isbn, 17);
+
+  book = BLL_find_by_isbn(books, isbn);
+  if (book == NULL) {
+    return;
+  }
+
+  printf("You are checking out book title \"%s\"", book->title);
+  Checkout checkout;
+  memcpy(checkout.isbn, book->isbn, strlen(book->isbn) + 1);
+  memcpy(checkout.created_on, "20240215", 8);
+  memcpy(checkout.expired_on, "20240301", 8);
+
+  CHKLL_add(checkouts, checkout);
+  printf("Book has been successfulled checked out");
+}
+
 void saveDatabase() {
   if (database.books == NULL) {
     database.books = books;
+  }
+  if (database.checkouts == NULL) {
+    database.checkouts = checkouts;
+  }
+
+  if (database.books != books) {
+    printf("Referential error: Books\n");
+    return;
   }
 
   DB_save(&database, DATAFILE);
@@ -74,6 +105,9 @@ void app() {
   switch (choice) {
   case 1:
     searchBook();
+    break;
+  case 2:
+    checkoutBook();
     break;
   case 90:
     collectBook();
@@ -90,12 +124,8 @@ void app() {
 
 int main() {
   DB_init(&database, DATAFILE);
-  if (database.books != NULL) {
-    books = database.books;
-  } else {
-    books = (BookLinkedList *)calloc(sizeof(BookLinkedList), 1);
-    BLL_init(books);
-  }
+  books = database.books;
+  checkouts = database.checkouts;
 
   app();
 
@@ -103,5 +133,12 @@ int main() {
   while (iter != NULL) {
     printf("Book %s by %s\n", iter->value.title, iter->value.authors);
     iter = iter->next;
+  }
+
+  CheckoutNode *iterC = checkouts->head;
+  while (iterC != NULL) {
+    printf("ISBN %s expires on %s\n", iterC->value.isbn,
+           iterC->value.expired_on);
+    iterC = iterC->next;
   }
 }

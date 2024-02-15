@@ -26,14 +26,29 @@ typedef struct {
   BookNode *head;
 } BookLinkedList;
 
+typedef struct CheckoutNode {
+  Checkout value;
+  struct CheckoutNode *next;
+} CheckoutNode;
+
+typedef struct {
+  int count;
+  CheckoutNode *head;
+} CheckoutLinkedList;
+
 typedef struct {
   unsigned short version;
   BookLinkedList *books;
+  CheckoutLinkedList *checkouts;
 } Database;
 
 void BLL_init(BookLinkedList *);
 void BLL_add(BookLinkedList *, Book);
 Book *BLL_find_by_isbn(BookLinkedList *, char isbn[18]);
+
+void CHKLL_init(CheckoutLinkedList *);
+void CHKLL_add(CheckoutLinkedList *, Checkout);
+Checkout *CHKLL_find_by_isbn(CheckoutLinkedList *, char isbn[18]);
 
 int DB_init(Database *, char *filename);
 void DB_save(Database *, char *filename);

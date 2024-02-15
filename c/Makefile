@@ -1,4 +1,4 @@
-OBJ_FILES = database.o booklinkedlist.o main.o
+OBJ_FILES = database.o checkoutlinkedlist.o booklinkedlist.o main.o
 
 %.o: %.c
 		gcc -c $< -o build/$@
