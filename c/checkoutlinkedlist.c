@@ -37,6 +37,7 @@ Checkout *CHKLL_find_by_isbn(CheckoutLinkedList *instance, char isbn[18]) {
 
   CheckoutNode *iter = instance->head;
   bool found;
+
   do {
     found = strcmp(iter->value.isbn, isbn);
     if (found == 0) {
@@ -49,4 +50,36 @@ Checkout *CHKLL_find_by_isbn(CheckoutLinkedList *instance, char isbn[18]) {
   return NULL;
 }
 
+void CHKLL_remove(CheckoutLinkedList *instance, Checkout *checkout) {
+  if (instance == NULL) {
+    return;
+  }
+
+  if (instance->head == NULL) {
+    return;
+  }
+
+  char *isbn = checkout->isbn;
+  CheckoutNode *iter = instance->head;
+  CheckoutNode *prev = NULL;
+  bool found;
+
+  do {
+    found = strcmp(iter->value.isbn, isbn);
+    if (found == 0) {
+      instance->count--;
+
+      if (prev == NULL) {
+        instance->head = iter->next;
+      } else {
+        prev->next = iter->next;
+      }
+
+      return;
+    }
+
+    prev = iter;
+    iter = iter->next;
+  } while (iter != NULL);
+}
 /* PRIVATE SECTION */

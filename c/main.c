@@ -19,14 +19,17 @@ void nreads(char *s, size_t limit) {
 }
 
 int menu() {
-  printf("|MENU                    |\n"
+  printf("+========================+\n"
+         ":         MENU           :\n"
          "+------------------------+\n"
-         "1. Search for book\n"
-         "2. Checkout a book\n"
-         "3. Return a lease\n"
-         "90. Add new book\n"
-         "99. Save\n"
-         "0. Quit\n");
+         ": 1. Search for book     :\n"
+         ": 2. Checkout a book     :\n"
+         ": 3. Return a lease      :\n"
+         ":91. Add new book        :\n"
+         ":99. Save                :\n"
+         "100. Report              :\n"
+         ": 0. Quit                :\n"
+         "+========================+\n");
 
   int choice;
   scanf("%d", &choice);
@@ -73,14 +76,30 @@ void checkoutBook() {
     return;
   }
 
-  printf("You are checking out book title \"%s\"", book->title);
+  printf("You are checking out book title \"%s\"...\n", book->title);
   Checkout checkout;
   memcpy(checkout.isbn, book->isbn, strlen(book->isbn) + 1);
   memcpy(checkout.created_on, "20240215", 8);
   memcpy(checkout.expired_on, "20240301", 8);
 
   CHKLL_add(checkouts, checkout);
-  printf("Book has been successfulled checked out");
+  printf("Book has been successfulled checked out\n");
+}
+
+void checkinBook() {
+  Checkout *checkout = NULL;
+  char isbn[18];
+  printf("Enter ISBN: ");
+  nreads(isbn, 17);
+
+  checkout = CHKLL_find_by_isbn(checkouts, isbn);
+  if (checkout == NULL) {
+    return;
+  }
+
+  printf("Checkin on %s, to be returned on %s\n", checkout->created_on,
+         checkout->expired_on);
+  CHKLL_remove(checkouts, checkout);
 }
 
 void saveDatabase() {
@@ -99,6 +118,25 @@ void saveDatabase() {
   DB_save(&database, DATAFILE);
 }
 
+void report() {
+  BookNode *iter = books->head;
+
+  printf("BOOKS\n");
+  while (iter != NULL) {
+    printf("%s %s by %s\n", iter->value.isbn, iter->value.title,
+           iter->value.authors);
+    iter = iter->next;
+  }
+
+  printf("BORROWS\n");
+  CheckoutNode *iterC = checkouts->head;
+  while (iterC != NULL) {
+    printf("ISBN %s expires on %s\n", iterC->value.isbn,
+           iterC->value.expired_on);
+    iterC = iterC->next;
+  }
+}
+
 void app() {
   int choice = menu();
 
@@ -109,11 +147,17 @@ void app() {
   case 2:
     checkoutBook();
     break;
+  case 3:
+    checkinBook();
+    break;
   case 90:
     collectBook();
     break;
   case 99:
     saveDatabase();
+    break;
+  case 100:
+    report();
     break;
   }
 
@@ -128,17 +172,4 @@ int main() {
   checkouts = database.checkouts;
 
   app();
-
-  BookNode *iter = books->head;
-  while (iter != NULL) {
-    printf("Book %s by %s\n", iter->value.title, iter->value.authors);
-    iter = iter->next;
-  }
-
-  CheckoutNode *iterC = checkouts->head;
-  while (iterC != NULL) {
-    printf("ISBN %s expires on %s\n", iterC->value.isbn,
-           iterC->value.expired_on);
-    iterC = iterC->next;
-  }
 }

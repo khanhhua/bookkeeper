@@ -49,6 +49,7 @@ Book *BLL_find_by_isbn(BookLinkedList *, char isbn[18]);
 void CHKLL_init(CheckoutLinkedList *);
 void CHKLL_add(CheckoutLinkedList *, Checkout);
 Checkout *CHKLL_find_by_isbn(CheckoutLinkedList *, char isbn[18]);
+void CHKLL_remove(CheckoutLinkedList *, Checkout *);
 
 int DB_init(Database *, char *filename);
 void DB_save(Database *, char *filename);
