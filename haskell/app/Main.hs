@@ -1,5 +1,6 @@
 module Main where
 
+import System.Environment (getArgs)
 import System.IO (hFlush, stdout)
 
 import Controls.Database (load, save)
@@ -12,29 +13,30 @@ data Application = Application [Book] [Checkout]
 
 main :: IO ()
 main = do
-  (books, checkouts) <- load "/Users/khanhhua/dev/bookkeeper/c/books.dat"
-  app (Application books checkouts)
+  [filepath] <- getArgs
+  (books, checkouts) <- load filepath
+  app filepath (Application books checkouts)
 
-app :: Application -> IO ()
-app application@(Application books checkouts) = do
+app :: String -> Application -> IO ()
+app filepath application@(Application books checkouts) = do
   choice <- menu
 
   case choice of
     0  -> return ()
     2 -> do
       checkout <- checkoutBook
-      app $ Application books (checkout : checkouts)
+      app filepath $ Application books (checkout : checkouts)
     91 -> do 
       book <- collectBook
-      app $ Application (book : books) checkouts
+      app filepath $ Application (book : books) checkouts
     99 -> do
-      save (books, checkouts) "/Users/khanhhua/dev/bookkeeper/c/books.dat"
-      app application
+      save (books, checkouts) filepath
+      app filepath application
     100 -> do
       report application
-      app application
+      app filepath application
 
-    otherwise -> app application
+    otherwise -> app filepath application
   
 menu :: IO Int
 menu = do
