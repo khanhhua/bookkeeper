@@ -5,16 +5,27 @@
 
 int DB_init(Database *instance, char *filename) {
   signed short version;
-  int bookCount, checkoutCount;
+  unsigned long bookCount, checkoutCount;
 
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
     file = fopen(filename, "w+");
     version = 1;
     bookCount = 0;
+    checkoutCount = 0;
     fwrite(&version, sizeof(unsigned short), 1, file);
-    fwrite(&bookCount, sizeof(int), 1, file);
+    fwrite(&bookCount, sizeof(unsigned long), 1, file);
+    fwrite(&checkoutCount, sizeof(unsigned long), 1, file);
     fclose(file);
+
+    BookLinkedList *books = (BookLinkedList *)calloc(1, sizeof(BookLinkedList));
+    BLL_init(books);
+    instance->books = books;
+
+    CheckoutLinkedList *checkouts =
+      (CheckoutLinkedList *)calloc(1, sizeof(CheckoutLinkedList));
+    CHKLL_init(checkouts);
+    instance->checkouts = checkouts;
 
     return 0;
   }
@@ -24,11 +35,12 @@ int DB_init(Database *instance, char *filename) {
   }
   instance->version = version;
 
-  if (1 != fread(&bookCount, sizeof(int), 1, file)) {
+  if (1 != fread(&bookCount, sizeof(unsigned long), 1, file)) {
     fclose(file);
     return 1;
   }
-  if (1 != fread(&checkoutCount, sizeof(int), 1, file)) {
+
+  if (1 != fread(&checkoutCount, sizeof(unsigned long), 1, file)) {
     fclose(file);
     return 1;
   }
@@ -36,12 +48,11 @@ int DB_init(Database *instance, char *filename) {
   BookLinkedList *books = (BookLinkedList *)calloc(1, sizeof(BookLinkedList));
   BLL_init(books);
   if (bookCount > 0) {
-
     Book bookArr[bookCount];
     int temp = 0;
     if (bookCount != (temp = fread(bookArr, sizeof(Book), bookCount, file))) {
       printf("Corruption error\n");
-      printf("Book count in file: %d vs %d\n", bookCount, temp);
+      printf("Book count in file: %ld vs %d\n", bookCount, temp);
 
       fclose(file);
 
@@ -63,7 +74,7 @@ int DB_init(Database *instance, char *filename) {
     if (checkoutCount !=
         (temp = fread(checkoutArr, sizeof(Checkout), checkoutCount, file))) {
       printf("Corruption error\n");
-      printf("Checkout count in file: %d vs %d\n", checkoutCount, temp);
+      printf("Checkout count in file: %ld vs %d\n", checkoutCount, temp);
 
       fclose(file);
 
@@ -84,8 +95,8 @@ void DB_save(Database *database, char *filename) {
   FILE *file = fopen(filename, "w");
 
   fwrite(&database->version, sizeof(unsigned short), 1, file);
-  fwrite(&database->books->count, sizeof(int), 1, file);
-  fwrite(&database->checkouts->count, sizeof(int), 1, file);
+  fwrite(&database->books->count, sizeof(unsigned long), 1, file);
+  fwrite(&database->checkouts->count, sizeof(unsigned long), 1, file);
 
   BookNode *iterBooks = database->books->head;
   while (iterBooks != NULL) {

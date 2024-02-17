@@ -10,7 +10,7 @@ static void promoteHead(CheckoutLinkedList *instance, CheckoutNode *newHead) {
 
 void CHKLL_init(CheckoutLinkedList *instance) {
   instance->head = NULL;
-  instance->count = 0;
+  instance->count = 0L;
 }
 
 void CHKLL_add(CheckoutLinkedList *instance, Checkout book) {

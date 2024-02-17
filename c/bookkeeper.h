@@ -22,7 +22,7 @@ typedef struct BookNode {
 } BookNode;
 
 typedef struct {
-  int count;
+  unsigned long count;
   BookNode *head;
 } BookLinkedList;
 
@@ -32,7 +32,7 @@ typedef struct CheckoutNode {
 } CheckoutNode;
 
 typedef struct {
-  int count;
+  unsigned long count;
   CheckoutNode *head;
 } CheckoutLinkedList;
 

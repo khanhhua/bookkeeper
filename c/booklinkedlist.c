@@ -10,14 +10,14 @@ static void promoteHead(BookLinkedList *instance, BookNode *newHead) {
 
 void BLL_init(BookLinkedList *instance) {
   instance->head = NULL;
-  instance->count = 0;
+  instance->count = 0L;
 }
 
 void BLL_add(BookLinkedList *instance, Book book) {
   BookNode *newHead = (BookNode *)calloc(1, sizeof(BookNode));
   newHead->value = book;
-
   instance->count++;
+
   if (instance->head == NULL) {
     instance->head = newHead;
     return;

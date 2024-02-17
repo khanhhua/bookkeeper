@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/Users/khanhhua/dev/bookkeeper/c/build",
+            "binaryPath": "/Users/khanhhua/dev/bookkeeper/c/build/bookkeeper",
+            "binaryArgs": []
+        }
+    ]
+}

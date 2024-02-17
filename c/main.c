@@ -15,7 +15,10 @@ void nreads(char *s, size_t limit) {
     fgets(s, limit, stdin);
   } while (s[0] == '\n');
   // Drop the newline character at the n-1 position
-  s[strlen(s) - 1] = '\0';
+  // and reset all remaining bytes of s to nulls
+  for (int i = strlen(s) - 1; i < limit; i++) {
+    s[i] = '\0';
+  }
 }
 
 int menu() {
@@ -78,7 +81,7 @@ void checkoutBook() {
 
   printf("You are checking out book title \"%s\"...\n", book->title);
   Checkout checkout;
-  memcpy(checkout.isbn, book->isbn, strlen(book->isbn) + 1);
+  memcpy(checkout.isbn, book->isbn, 18);
   memcpy(checkout.created_on, "20240215", 8);
   memcpy(checkout.expired_on, "20240301", 8);
 
@@ -90,7 +93,7 @@ void checkinBook() {
   Checkout *checkout = NULL;
   char isbn[18];
   printf("Enter ISBN: ");
-  nreads(isbn, 17);
+  nreads(isbn, 18);
 
   checkout = CHKLL_find_by_isbn(checkouts, isbn);
   if (checkout == NULL) {
@@ -115,6 +118,7 @@ void saveDatabase() {
     return;
   }
 
+  database.version = 1;
   DB_save(&database, DATAFILE);
 }
 
@@ -150,7 +154,7 @@ void app() {
   case 3:
     checkinBook();
     break;
-  case 90:
+  case 91:
     collectBook();
     break;
   case 99:
@@ -170,6 +174,15 @@ int main() {
   DB_init(&database, DATAFILE);
   books = database.books;
   checkouts = database.checkouts;
+
+  if (books == NULL) {
+    printf("Could not initialize. Books is null.");
+    return 1;
+  }
+  if (checkouts == NULL) {
+    printf("Could not initialize. Checkouts is null.");
+    return 1;
+  }
 
   app();
 }
