@@ -1,18 +1,31 @@
-module Controls.Database (load) where
+module Controls.Database (load, save) where
 
 import System.IO (Handle, IOMode (ReadMode), withFile)
-import Control.Monad (replicateM)
+import Control.Monad (replicateM, foldM)
 
 import Data.Binary.Get as B (Get, runGet, getByteString, getWord16le, getWord64le)
 import qualified Data.ByteString.Char8 as Char8 (unpack)
 import qualified Data.ByteString.Lazy as BL (unpack, toStrict)
 import Data.ByteString.Lazy (hGet)
 
-import Data.Book ( Book(Book) )
-import Data.Checkout ( Checkout(Checkout) )
+import Data.Book ( Book(Book, authors) )
+import Data.Checkout ( Checkout(Checkout, isbn, createdOn) )
+import qualified Data.ByteString.Builder as Builder
+import Data.Foldable (fold)
+
 
 load :: String -> IO ([Book], [Checkout])
 load filepath = withFile filepath ReadMode doLoad
+
+save :: ([Book], [Checkout]) -> String -> IO ()
+save (books, checkouts) pathname =
+  Builder.writeFile pathname packed
+  where 
+    packed = Builder.word16LE 1
+      <> Builder.word64LE (fromIntegral $ length books)
+      <> Builder.word64LE (fromIntegral $ length checkouts)
+      <> foldMap buildBook books
+      <> foldMap buildCheckout checkouts
 
 doLoad :: Handle -> IO ([Book], [Checkout])
 doLoad handle = do
@@ -42,3 +55,20 @@ getBook =
 
 getString :: Int -> Get String
 getString n = Char8.unpack <$> getByteString n
+
+buildBook :: Book -> Builder.Builder
+buildBook (Book isbn title authors) =
+  fixedWidthBuilder isbn 18
+  <> fixedWidthBuilder title 51
+  <> fixedWidthBuilder authors 51
+    
+
+buildCheckout :: Checkout -> Builder.Builder
+buildCheckout (Checkout isbn createdOn expiredOn) =
+  fixedWidthBuilder isbn 18
+  <> fixedWidthBuilder createdOn 8
+  <> fixedWidthBuilder expiredOn 8
+
+fixedWidthBuilder s width =
+  let len = length s
+  in Builder.string8 s <> fold (replicate (width - len) $ Builder.char8 '\0')
